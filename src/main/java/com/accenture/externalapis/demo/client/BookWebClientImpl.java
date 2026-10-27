@@ -1,12 +1,15 @@
 package com.accenture.externalapis.demo.client;
 
 import com.accenture.externalapis.demo.config.ExternalServiceProperties;
+import com.accenture.externalapis.demo.dto.BookDto;
+import java.util.List;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-// TODO: Make this class implement BookWebClient.
 @Component
-public class BookWebClientImpl {
+public class BookWebClientImpl implements BookWebClient {
 
     private WebClient webClient;
 
@@ -16,6 +19,23 @@ public class BookWebClientImpl {
         //
         // Optional/bonus: this service doesn't require auth, but in a real API you would
         // often also add builder.defaultHeader("Authorization", "Bearer " + token) here.
+    }
+
+    // Task 2 will replace these placeholders. Implementing the interface lets
+    // Spring inject this bean into the existing controller during Task 1.
+    @Override
+    public Mono<BookDto> getBookAsync(Long id) {
+        return Mono.error(new UnsupportedOperationException("WebClient is implemented in Practical Task 2"));
+    }
+
+    @Override
+    public Flux<BookDto> getAllBooksAsync() {
+        return Flux.error(new UnsupportedOperationException("WebClient is implemented in Practical Task 2"));
+    }
+
+    @Override
+    public Mono<List<BookDto>> getBooksInParallel(Long id1, Long id2) {
+        return Mono.error(new UnsupportedOperationException("WebClient is implemented in Practical Task 2"));
     }
 
     // TODO: Implement getBookAsync(Long id) - fetch one book from GET /books/{id} as

@@ -110,3 +110,35 @@ src/main/java/com/accenture/externalapis/demo/
 - Java 21
 - No external tools needed - the external service is already deployed and
   pre-configured, you don't need to run anything else locally.
+
+## Checking the implementation
+
+The `rest-client` branch completes Practical Task 1. It reuses the existing
+controller, configuration and exception handler. WebClient endpoints have
+temporary placeholders until Practical Task 2.
+
+`BookApiResponse` matches the seven fields confirmed in Swagger and the live
+response: `id`, `title`, `author`, `genre`, `price`, `isbn`, `publishedYear`.
+Its `toDto()` method keeps only the four fields required by `BookDto`.
+
+Run the normal tests on Windows with:
+
+```powershell
+.\mvnw.cmd test
+```
+
+The normal tests use simulated responses and do not require the external API.
+To also run the live API checks, explicitly enable them:
+
+```powershell
+.\mvnw.cmd "-DexternalApiChecks=true" test
+```
+
+The live checks fetch book 1, fetch all books and check chaos IDs 991-993.
+Observed on 2026-10-27: 991 returns JSON labeled `text/plain`, 992 returns
+HTTP 200 with an empty body, and 993 returns HTTP 503. These are all reported
+as `ClientException`; the existing exception handler returns HTTP 502.
+An empty JSON array (`[]`) is a valid empty book list.
+
+The base URL still comes from `external-service.base-url`; override it with
+the `EXTERNAL_SERVICE_URL` environment variable if needed.

@@ -1,9 +1,15 @@
 package com.accenture.externalapis.demo.dto;
 
-// TODO: Define this record yourself.
-// Open Swagger UI on the external service (https://external-api.acnbootcamp.lv/swagger-ui.html)
-// and look at the response schema for GET /api/books/{id} - add exactly the
-// fields it returns, with matching types. Once this matches the raw response,
-// design your own BookDto with only the fields you actually need.
-public record BookApiResponse() {
+// Raw response from the external API, including fields our application does not expose.
+public record BookApiResponse(Long id,
+                              String title,
+                              String author,
+                              String genre,
+                              double price,
+                              String isbn,
+                              Integer publishedYear) {
+
+    public BookDto toDto() {
+        return new BookDto(title, author, genre, price);
+    }
 }
