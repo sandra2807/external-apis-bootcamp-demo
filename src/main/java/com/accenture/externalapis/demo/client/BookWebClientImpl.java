@@ -1,6 +1,7 @@
 package com.accenture.externalapis.demo.client;
 
 import com.accenture.externalapis.demo.config.ExternalServiceProperties;
+import com.accenture.externalapis.demo.dto.BookApiResponse;
 import com.accenture.externalapis.demo.dto.BookDto;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -11,45 +12,39 @@ import reactor.core.publisher.Mono;
 @Component
 public class BookWebClientImpl implements BookWebClient {
 
-    private WebClient webClient;
+    private final WebClient webClient;
 
     public BookWebClientImpl(WebClient.Builder builder, ExternalServiceProperties properties) {
-        // TODO: Build the WebClient using builder.baseUrl(properties.baseUrl()).build()
-        // and assign it to this.webClient
-        //
-        // Optional/bonus: this service doesn't require auth, but in a real API you would
-        // often also add builder.defaultHeader("Authorization", "Bearer " + token) here.
+        this.webClient = builder.baseUrl(properties.baseUrl()).build();
     }
 
-    // Task 2 will replace these placeholders. Implementing the interface lets
-    // Spring inject this bean into the existing controller during Task 1.
     @Override
     public Mono<BookDto> getBookAsync(Long id) {
-        return Mono.error(new UnsupportedOperationException("WebClient is implemented in Practical Task 2"));
+        return webClient.get()
+                .uri("/books/{id}", id)
+                .retrieve()
+                .bodyToMono(BookApiResponse.class)
+                .map(BookApiResponse::toDto)
+                .onErrorMap(ex -> new ClientException(
+                        "Could not fetch book " + id + " from the external book service", ex))
+                .switchIfEmpty(Mono.error(new ClientException(
+                        "External book service returned an empty response for book " + id)));
     }
 
     @Override
     public Flux<BookDto> getAllBooksAsync() {
-        return Flux.error(new UnsupportedOperationException("WebClient is implemented in Practical Task 2"));
+        return webClient.get()
+                .uri("/books")
+                .retrieve()
+                .bodyToFlux(BookApiResponse.class)
+                .map(BookApiResponse::toDto)
+                .onErrorMap(ex -> new ClientException(
+                        "Could not fetch books from the external book service", ex));
     }
 
     @Override
     public Mono<List<BookDto>> getBooksInParallel(Long id1, Long id2) {
-        return Mono.error(new UnsupportedOperationException("WebClient is implemented in Practical Task 2"));
+        return Mono.zip(getBookAsync(id1), getBookAsync(id2))
+                .map(books -> List.of(books.getT1(), books.getT2()));
     }
-
-    // TODO: Implement getBookAsync(Long id) - fetch one book from GET /books/{id} as
-    // Mono<BookApiResponse>, then map it onto a Mono<BookDto>.
-    //
-    // TODO: Handle the main WebClient error cases and rethrow them as ClientException,
-    // e.g. via onStatus()/onErrorResume():
-    //  - WebClientResponseException (4xx/5xx, e.g. book not found or the faulty/teapot book)
-    //  - WebClientRequestException (connection refused / timeout - the external service is unreachable)
-
-    // TODO: Implement getAllBooksAsync() - fetch all books from GET /books as
-    // Flux<BookApiResponse>, then map each one onto a BookDto. Handle the same error
-    // cases as getBookAsync() above.
-
-    // TODO: Implement getBooksInParallel(Long id1, Long id2) - fetch two books in
-    // parallel with Mono.zip(). Handle the same error cases as getBookAsync() above.
 }

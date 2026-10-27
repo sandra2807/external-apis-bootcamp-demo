@@ -113,9 +113,12 @@ src/main/java/com/accenture/externalapis/demo/
 
 ## Checking the implementation
 
-The `rest-client` branch completes Practical Task 1. It reuses the existing
-controller, configuration and exception handler. WebClient endpoints have
-temporary placeholders until Practical Task 2.
+The `rest-client` branch completes Practical Task 1. The `web-client` branch
+starts from the completed `rest-client` commit and adds Practical Task 2.
+Both implementations reuse the existing controller, configuration and exception
+handler. WebClient uses `Mono` for one result, `Flux` for a stream of books and
+`Mono.zip()` to start two requests together and return their results in input
+order. It never blocks while waiting for a response.
 
 `BookApiResponse` matches the seven fields confirmed in Swagger and the live
 response: `id`, `title`, `author`, `genre`, `price`, `isbn`, `publishedYear`.
@@ -135,6 +138,8 @@ To also run the live API checks, explicitly enable them:
 ```
 
 The live checks fetch book 1, fetch all books and check chaos IDs 991-993.
+On `web-client`, they also fetch books 1 and 2 in parallel and check that a
+chaos response from either combined request is reported as an error.
 Observed on 2026-10-27: 991 returns JSON labeled `text/plain`, 992 returns
 HTTP 200 with an empty body, and 993 returns HTTP 503. These are all reported
 as `ClientException`; the existing exception handler returns HTTP 502.
