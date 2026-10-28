@@ -12,6 +12,7 @@ import org.springframework.web.client.RestClientException;
 @Component
 public class BookRestClientImpl implements BookRestClient {
 
+
     private final RestClient restClient;
 
     public BookRestClientImpl(RestClient.Builder builder, ExternalServiceProperties properties) {
